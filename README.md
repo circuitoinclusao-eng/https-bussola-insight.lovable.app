@@ -1,0 +1,1 @@
+# https-bussola-insight.lovable.app
