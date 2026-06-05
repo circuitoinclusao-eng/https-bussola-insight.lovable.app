@@ -13,5 +13,12 @@ export default tseslint.config(
       globals: globals.browser,
       parserOptions: { project: './tsconfig.app.json' }
     }
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: globals.node
+    }
   }
 );

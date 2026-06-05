@@ -1,6 +1,6 @@
 import { requireSupabase } from './supabase';
 
-type JsonRecord = Record<string, string | number | boolean | null | undefined>;
+export type JsonRecord = Record<string, string | number | boolean | null | undefined>;
 
 async function insertAndReturn(table: string, payload: JsonRecord) {
   const db = requireSupabase();
@@ -17,6 +17,13 @@ export const createAtividade = (payload: JsonRecord) => insertAndReturn('ativida
 export const createFrequencia = (payload: JsonRecord) => insertAndReturn('frequencias', payload);
 export const createAtendimento = (payload: JsonRecord) => insertAndReturn('atendimentos', payload);
 export const createRelacionamento = (payload: JsonRecord) => insertAndReturn('relacionamento', payload);
+
+export async function bulkInsertAndReturnIds(table: string, payloads: JsonRecord[]) {
+  const db = requireSupabase();
+  const { data, error } = await db.from(table).insert(payloads).select('id');
+  if (error) throw error;
+  return data ?? [];
+}
 
 export async function registerAccessLog(tabela: string, acao: string, registro_id?: string) {
   const db = requireSupabase();

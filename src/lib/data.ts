@@ -1,6 +1,13 @@
 import { requireSupabase } from './supabase';
 import type { DashboardData, IndicatorFilters, ImpactRow, IntegratedPanelData, IntegratedPanelFilters, ReportRow, ResourceByProject } from './types';
 
+type SupabaseQueryResult<T = unknown> = { data: T[] | null; error: Error | null };
+type SupabaseSelectQuery<T = unknown> = PromiseLike<SupabaseQueryResult<T>> & {
+  eq: (column: string, value: string | number) => SupabaseSelectQuery<T>;
+  order: (column: string, options?: { ascending?: boolean }) => SupabaseSelectQuery<T>;
+};
+type SupabaseViewClient = { from: (relation: string) => { select: (columns: string) => SupabaseSelectQuery } };
+
 export async function fetchDashboardData(): Promise<DashboardData> {
   const db = requireSupabase();
   const [metrics, atividadesMensais, projetosStatus, pessoasCidade, frequenciaProjeto, atendimentosTipo, ocupacaoGrupo] = await Promise.all([
@@ -63,7 +70,7 @@ function applyPanelFilters<T extends { eq: (column: string, value: string | numb
 }
 
 export async function fetchIntegratedPanelData(filters: IntegratedPanelFilters): Promise<IntegratedPanelData> {
-  const db = requireSupabase();
+  const db = requireSupabase() as unknown as SupabaseViewClient;
   const temporalFilters: Array<keyof IntegratedPanelFilters> = ['ano', 'mes', 'projeto', 'cidade', 'polo', 'modalidade', 'patrocinador'];
   const dimensionFilters: Array<keyof IntegratedPanelFilters> = ['ano', 'mes', 'projeto', 'cidade', 'polo', 'modalidade', 'patrocinador'];
 
@@ -93,14 +100,14 @@ export async function fetchIntegratedPanelData(filters: IntegratedPanelFilters):
   if (errors.length) throw errors[0];
 
   return {
-    pessoas: pessoas.data ?? [],
-    atendimentos: atendimentos.data ?? [],
-    atividades: atividades.data ?? [],
-    grupos: grupos.data ?? [],
-    condicoes: condicoes.data ?? [],
-    frequencias: frequencias.data ?? [],
-    ocupacao: ocupacao.data ?? [],
-    projetosStatus: projetosStatus.data ?? [],
+    pessoas: (pessoas.data ?? []) as IntegratedPanelData['pessoas'],
+    atendimentos: (atendimentos.data ?? []) as IntegratedPanelData['atendimentos'],
+    atividades: (atividades.data ?? []) as IntegratedPanelData['atividades'],
+    grupos: (grupos.data ?? []) as IntegratedPanelData['grupos'],
+    condicoes: (condicoes.data ?? []) as IntegratedPanelData['condicoes'],
+    frequencias: (frequencias.data ?? []) as IntegratedPanelData['frequencias'],
+    ocupacao: (ocupacao.data ?? []) as IntegratedPanelData['ocupacao'],
+    projetosStatus: (projetosStatus.data ?? []) as IntegratedPanelData['projetosStatus'],
   };
 }
 

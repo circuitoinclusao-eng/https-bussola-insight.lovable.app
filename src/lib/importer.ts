@@ -1,3 +1,5 @@
+import { IMPORT_COMPLETED_EVENT } from './events';
+import { bulkInsertAndReturnIds, type JsonRecord } from './operations';
 import { requireSupabase } from './supabase';
 
 export type ImportKind = 'atendidos' | 'atividades' | 'frequencias' | 'atendimentos' | 'projetos' | 'grupos';
@@ -237,7 +239,7 @@ export async function findExistingDuplicates(kind: ImportKind, records: ImportRe
   if (!completeRecords.length) return [];
   const { data, error } = await db.from(config.table).select(duplicateSelectByKind[kind]).limit(10000);
   if (error) throw error;
-  const existing = new Set((data ?? []).map((row) => config.duplicateKey(row as ImportRecord).toLowerCase()));
+  const existing = new Set((data ?? []).map((row) => config.duplicateKey(row as unknown as ImportRecord).toLowerCase()));
   return records.flatMap((record, index) => {
     if (!hasRequiredValues(config, record)) return [];
     return existing.has(config.duplicateKey(record).toLowerCase())
@@ -258,12 +260,12 @@ export async function canImportData() {
 
 export async function importRows(kind: ImportKind, records: ImportRecord[]): Promise<ImportSummary> {
   if (!records.length) return { inserted: 0, errors: [] };
-  const db = requireSupabase();
   const config = importConfigs[kind];
-  const { data, error } = await db.from(config.table).insert(records).select('id');
-  if (error) {
-    return { inserted: 0, errors: [{ linha: 0, campo: config.table, mensagem: error.message }] };
+  try {
+    const data = await bulkInsertAndReturnIds(config.table, records as JsonRecord[]);
+    window.dispatchEvent(new CustomEvent(IMPORT_COMPLETED_EVENT, { detail: { kind, inserted: data.length || records.length } }));
+    return { inserted: data.length || records.length, errors: [] };
+  } catch (error) {
+    return { inserted: 0, errors: [{ linha: 0, campo: config.table, mensagem: error instanceof Error ? error.message : 'Falha ao salvar registros' }] };
   }
-  window.dispatchEvent(new CustomEvent('circuito:importacao-concluida', { detail: { kind, inserted: data?.length ?? records.length } }));
-  return { inserted: data?.length ?? records.length, errors: [] };
 }
