@@ -9,7 +9,7 @@ import type { Atendido, GrauDeficiencia, Sexo, StatusAtendido } from '../types';
 type FormMode = 'novo' | 'editar' | 'visualizar';
 type SortKey = 'nome' | 'cidade' | 'idade' | 'status';
 type LinhaPlanilha = Record<string, unknown>;
-type CampoImportacao = keyof Pick<Atendido, 'nome' | 'idPessoa' | 'dataNascimento' | 'idade' | 'faixaEtaria' | 'sexo' | 'tipoDeficiencia' | 'grau' | 'cidade' | 'territorio' | 'unidade' | 'projeto' | 'servico' | 'responsavel' | 'telefone' | 'escola' | 'observacoes' | 'status'>;
+type CampoImportacao = keyof Pick<Atendido, 'nome' | 'idPessoa' | 'dataNascimento' | 'idade' | 'faixaEtaria' | 'sexo' | 'tipoDeficiencia' | 'grau' | 'cidade' | 'territorio' | 'unidade' | 'projeto' | 'servico' | 'responsavel' | 'telefone' | 'email' | 'escola' | 'observacoes' | 'status' | 'origemFonte' | 'createdAt' | 'updatedAt'>;
 type MapeamentoImportacao = Record<string, CampoImportacao | ''>;
 type ResumoImportacao = {
   total: number;
@@ -47,9 +47,13 @@ const camposPadrao: Array<{ campo: CampoImportacao | ''; label: string }> = [
   { campo: 'servico', label: 'Serviço' },
   { campo: 'responsavel', label: 'Responsável' },
   { campo: 'telefone', label: 'Telefone' },
+  { campo: 'email', label: 'E-mail' },
   { campo: 'escola', label: 'Escola' },
   { campo: 'observacoes', label: 'Observações' },
   { campo: 'status', label: 'Status' },
+  { campo: 'origemFonte', label: 'Origem da fonte' },
+  { campo: 'createdAt', label: 'Data de criação' },
+  { campo: 'updatedAt', label: 'Data de atualização' },
 ];
 
 const vazio: FormAtendido = {
@@ -108,9 +112,13 @@ function reconhecerColuna(coluna: string): CampoImportacao | '' {
   if (texto.includes('servico')) return 'servico';
   if (['responsavel', 'mae', 'pai'].some((termo) => texto.includes(termo))) return 'responsavel';
   if (['telefone', 'contato', 'whatsapp'].some((termo) => texto.includes(termo))) return 'telefone';
+  if (texto.includes('email') || texto.includes('e-mail')) return 'email';
   if (texto.includes('escola')) return 'escola';
   if (texto.includes('observ')) return 'observacoes';
   if (texto.includes('status')) return 'status';
+  if (texto.includes('origem') || texto.includes('fonte')) return 'origemFonte';
+  if (texto.includes('created') || texto.includes('criacao') || texto.includes('criado')) return 'createdAt';
+  if (texto.includes('updated') || texto.includes('atualizacao') || texto.includes('atualizado')) return 'updatedAt';
   return '';
 }
 
@@ -337,7 +345,7 @@ export function Atendidos() {
   }
 
   function exportarLista(tipo: 'excel' | 'csv') {
-    const linhas = filtrados.map((item) => ({ ID: item.idPessoa, Nome: item.nome, Idade: item.idade, Sexo: item.sexo, Deficiência: item.tipoDeficiencia, Grau: item.grau, Cidade: item.cidade, Unidade: item.unidade, Projeto: item.projeto, Responsável: item.responsavel, Telefone: item.telefone, Status: item.status }));
+    const linhas = filtrados.map((item) => ({ ID: item.idPessoa, Nome: item.nome, Idade: item.idade, Sexo: item.sexo, Deficiência: item.tipoDeficiencia, Grau: item.grau, Cidade: item.cidade, Unidade: item.unidade, Projeto: item.projeto, Responsável: item.responsavel, Telefone: item.telefone, Email: item.email, Escola: item.escola, Observações: item.observacoes, Status: item.status, Origem: item.origemFonte, CriadoEm: item.createdAt, AtualizadoEm: item.updatedAt }));
     if (tipo === 'excel') exportarExcel(linhas, 'lista-atendidos');
     else exportarCSV(linhas, 'lista-atendidos');
     setToast('Lista de alunos exportada com sucesso.');
@@ -405,6 +413,9 @@ function FormularioAluno({ modal, erros, setModal, onClose, onSave }: { modal: {
           <Field label="Telefone do responsável"><input disabled={readonly} value={modal.form.telefone} onChange={(event) => update('telefone', event.target.value)} /></Field>
           <Field label="E-mail do responsável"><input disabled={readonly} type="email" value={modal.form.email} onChange={(event) => update('email', event.target.value)} /></Field>
           <Field label="Escola"><input disabled={readonly} value={modal.form.escola} onChange={(event) => update('escola', event.target.value)} /></Field>
+          <Field label="Origem da fonte"><input disabled={readonly} value={modal.form.origemFonte ?? ''} onChange={(event) => update('origemFonte', event.target.value)} /></Field>
+          <Field label="Criado em"><input disabled value={modal.form.createdAt ?? ''} /></Field>
+          <Field label="Atualizado em"><input disabled value={modal.form.updatedAt ?? ''} /></Field>
           <Field label="Status"><select disabled={readonly} value={modal.form.status} onChange={(event) => update('status', event.target.value as StatusAtendido)}>{statusOptions.map((item) => <option key={item}>{item}</option>)}</select></Field>
           <label className="span-2">Observações<textarea disabled={readonly} value={modal.form.observacoes} onChange={(event) => update('observacoes', event.target.value)} /></label>
         </div>
