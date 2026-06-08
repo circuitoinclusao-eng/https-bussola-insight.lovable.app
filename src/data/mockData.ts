@@ -82,6 +82,7 @@ export const atendidos: Atendido[] = Array.from(new Map(registrosAtendimento.map
   origemFonte: registro.origemFonte,
   createdAt: '2026-05-28T10:30:00',
   updatedAt: '2026-05-28T10:30:00',
+  status: index % 9 === 0 ? 'Acompanhamento' : 'Ativo',
 }));
 
 export const atendimentos: Atendimento[] = registrosAtendimento.map((registro, index) => ({

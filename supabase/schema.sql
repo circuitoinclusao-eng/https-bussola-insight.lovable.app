@@ -75,6 +75,7 @@ create table if not exists atendidos (
   origem_fonte text,
   deleted_at timestamptz,
   updated_at timestamptz not null default now()
+  status text
 );
 
 create table if not exists atendimentos (
@@ -120,6 +121,7 @@ create index if not exists idx_registros_filtros on registros_atendimento (data_
 create index if not exists idx_atendidos_filtros on atendidos (projeto, cidade, unidade, grau, tipo_deficiencia, sexo, faixa_etaria, status);
 create index if not exists idx_atendidos_deleted_at on atendidos (deleted_at);
 create index if not exists idx_atendidos_nome on atendidos (nome);
+create index if not exists idx_atendidos_filtros on atendidos (projeto, cidade, unidade, grau, tipo_deficiencia, sexo, faixa_etaria);
 create index if not exists idx_atendimentos_filtros on atendimentos (data_atendimento, projeto, cidade, unidade, servico, grau);
 create index if not exists idx_fontes_status on fontes_planilha (status, data_importacao);
 create index if not exists idx_logs_data on logs_processamento (data_hora desc);

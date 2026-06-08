@@ -92,6 +92,13 @@ async function listarOuMock<T>(tabela: string, mock: T[], softDelete = false): P
   if (!supabaseConfigurado || !supabaseClient) return mock;
   const query = supabaseClient.from(tabela).select('*');
   const { data, error } = softDelete ? await query.is('deleted_at', null) : await query;
+import type { FiltrosGerenciais, FontePlanilha, MapeamentoColuna } from '../types';
+import { agruparPor, filtrarRegistros, resumoPorGrau } from './consolidacao';
+import { supabaseClient, supabaseConfigurado } from './supabaseClient';
+
+async function listarOuMock<T>(tabela: string, mock: T[]): Promise<T[]> {
+  if (!supabaseConfigurado || !supabaseClient) return mock;
+  const { data, error } = await supabaseClient.from(tabela).select('*');
   if (error || !data?.length) return mock;
   return data as T[];
 }
@@ -122,6 +129,7 @@ export async function listarAtendidos() {
   if (error || !data?.length) return atendidos;
   return (data as AtendidoDb[]).map(fromAtendidoDb);
 }
+export const listarAtendidos = () => listarOuMock('atendidos', atendidos);
 export const listarAtendimentos = () => listarOuMock('atendimentos', atendimentos);
 export const listarProjetos = () => listarOuMock('projetos', projetos);
 export const listarLogs = () => listarOuMock('logs_processamento', logsProcessamento);
