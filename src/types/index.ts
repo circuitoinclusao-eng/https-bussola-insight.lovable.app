@@ -3,7 +3,7 @@ export type StatusValidacao = 'Válido' | 'Alerta' | 'Incompleto' | 'Duplicado';
 export type StatusProjeto = 'Ativo' | 'Encerrado' | 'Pausado';
 export type GrauDeficiencia = 'Leve' | 'Moderado' | 'Grave/Severo' | 'Não informado';
 export type Sexo = 'Feminino' | 'Masculino' | 'Não informado';
-export type StatusAtendido = 'Ativo' | 'Inativo' | 'Acompanhamento' | 'Inconsistente' | 'Aguardando revisão' | 'Excluído';
+export type StatusAtendido = 'Ativo' | 'Inativo' | 'Aguardando revisão' | 'Inconsistente' | 'Retirado' | 'Excluído';
 
 export type FontePlanilha = {
   id: string;
@@ -73,6 +73,13 @@ export type Atendido = {
   observacoes: string;
   status: StatusAtendido;
   origemFonte?: string;
+  dataRetirada?: string;
+  motivoRetirada?: string;
+  observacoesRetirada?: string;
+  retiradoPor?: string;
+  deletedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
   deletedAt?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -130,6 +137,7 @@ export type FiltrosGerenciais = {
   grau?: string;
   sexo?: string;
   faixaEtaria?: string;
+  incluirRetirados?: boolean;
 };
 
 export type SerieValor = { nome: string; total: number; percentual?: number };
