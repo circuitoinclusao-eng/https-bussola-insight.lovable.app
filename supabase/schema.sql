@@ -79,6 +79,9 @@ create table if not exists atendidos (
   retirado_por text,
   deleted_at timestamptz,
   updated_at timestamptz not null default now()
+  deleted_at timestamptz,
+  updated_at timestamptz not null default now()
+  status text
 );
 
 create table if not exists atendimentos (

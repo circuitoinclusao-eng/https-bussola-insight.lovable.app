@@ -80,6 +80,10 @@ export type Atendido = {
   deletedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  deletedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  status: 'Ativo' | 'Inativo' | 'Acompanhamento';
 };
 
 export type Atendimento = {
