@@ -51,15 +51,19 @@ export async function fetchIndicatorData(filters: IndicatorFilters) {
 }
 
 
-function applyPanelFilters<T extends { eq: (column: string, value: string | number) => T }>(
-  query: T,
+type FilterableQuery = { eq: (column: string, value: string | number) => FilterableQuery; order: (column: string, options?: { ascending?: boolean }) => Promise<{ data: unknown[] | null; error: unknown }> };
+
+function applyPanelFilters(
+  query: FilterableQuery,
   filters: IntegratedPanelFilters,
   allowed: Array<keyof IntegratedPanelFilters>,
 ) {
-  return allowed.reduce((current, key) => {
+  let current = query;
+  allowed.forEach((key) => {
     const value = filters[key];
-    return value && value !== 'todos' ? current.eq(key, value) : current;
-  }, query);
+    if (value && value !== 'todos') current = current.eq(key, value);
+  });
+  return current;
 }
 
 export async function fetchIntegratedPanelData(filters: IntegratedPanelFilters): Promise<IntegratedPanelData> {
@@ -67,19 +71,27 @@ export async function fetchIntegratedPanelData(filters: IntegratedPanelFilters):
   const temporalFilters: Array<keyof IntegratedPanelFilters> = ['ano', 'mes', 'projeto', 'cidade', 'polo', 'modalidade', 'patrocinador'];
   const dimensionFilters: Array<keyof IntegratedPanelFilters> = ['ano', 'mes', 'projeto', 'cidade', 'polo', 'modalidade', 'patrocinador'];
 
-  const pessoasQuery = applyPanelFilters(db.from('vw_painel_pessoas').select('*'), filters, temporalFilters);
-  const atendimentosQuery = applyPanelFilters(db.from('vw_painel_atendimentos').select('*'), filters, temporalFilters);
-  const atividadesQuery = applyPanelFilters(db.from('vw_painel_atividades').select('*'), filters, temporalFilters);
-  const gruposQuery = applyPanelFilters(db.from('vw_painel_grupos').select('*'), filters, dimensionFilters);
-  const condicoesQuery = applyPanelFilters(db.from('vw_painel_condicoes').select('*'), filters, temporalFilters);
-  const frequenciasQuery = applyPanelFilters(db.from('vw_painel_frequencia_projeto').select('*'), filters, temporalFilters);
-  const ocupacaoQuery = applyPanelFilters(db.from('vw_painel_ocupacao_turma').select('*'), filters, dimensionFilters);
-  const projetosStatusQuery = applyPanelFilters(db.from('vw_painel_projetos_status').select('*'), filters, dimensionFilters);
+  const pessoasBase = db.from('vw_painel_pessoas').select('*') as unknown as FilterableQuery;
+  const pessoasQuery = applyPanelFilters(pessoasBase, filters, temporalFilters);
+  const atendimentosBase = db.from('vw_painel_atendimentos').select('*') as unknown as FilterableQuery;
+  const atendimentosQuery = applyPanelFilters(atendimentosBase, filters, temporalFilters);
+  const atividadesBase = db.from('vw_painel_atividades').select('*') as unknown as FilterableQuery;
+  const atividadesQuery = applyPanelFilters(atividadesBase, filters, temporalFilters);
+  const gruposBase = db.from('vw_painel_grupos').select('*') as unknown as FilterableQuery;
+  const gruposQuery = applyPanelFilters(gruposBase, filters, dimensionFilters);
+  const condicoesBase = db.from('vw_painel_condicoes').select('*') as unknown as FilterableQuery;
+  const condicoesQuery = applyPanelFilters(condicoesBase, filters, temporalFilters);
+  const frequenciasBase = db.from('vw_painel_frequencia_projeto').select('*') as unknown as FilterableQuery;
+  const frequenciasQuery = applyPanelFilters(frequenciasBase, filters, temporalFilters);
+  const ocupacaoBase = db.from('vw_painel_ocupacao_turma').select('*') as unknown as FilterableQuery;
+  const ocupacaoQuery = applyPanelFilters(ocupacaoBase, filters, dimensionFilters);
+  const projetosStatusBase = db.from('vw_painel_projetos_status').select('*') as unknown as FilterableQuery;
+  const projetosStatusQuery = applyPanelFilters(projetosStatusBase, filters, dimensionFilters);
 
   const [pessoas, atendimentos, atividades, grupos, condicoes, frequencias, ocupacao, projetosStatus] = await Promise.all([
     pessoasQuery.order('total', { ascending: false }),
     atendimentosQuery.order('total', { ascending: false }),
-    atividadesQuery.order('ano').order('mes'),
+    atividadesQuery.order('ano'),
     gruposQuery.order('projeto'),
     condicoesQuery.order('total', { ascending: false }),
     frequenciasQuery.order('projeto'),
@@ -93,14 +105,14 @@ export async function fetchIntegratedPanelData(filters: IntegratedPanelFilters):
   if (errors.length) throw errors[0];
 
   return {
-    pessoas: pessoas.data ?? [],
-    atendimentos: atendimentos.data ?? [],
-    atividades: atividades.data ?? [],
-    grupos: grupos.data ?? [],
-    condicoes: condicoes.data ?? [],
-    frequencias: frequencias.data ?? [],
-    ocupacao: ocupacao.data ?? [],
-    projetosStatus: projetosStatus.data ?? [],
+    pessoas: (pessoas.data ?? []) as IntegratedPanelData['pessoas'],
+    atendimentos: (atendimentos.data ?? []) as IntegratedPanelData['atendimentos'],
+    atividades: (atividades.data ?? []) as IntegratedPanelData['atividades'],
+    grupos: (grupos.data ?? []) as IntegratedPanelData['grupos'],
+    condicoes: (condicoes.data ?? []) as IntegratedPanelData['condicoes'],
+    frequencias: (frequencias.data ?? []) as IntegratedPanelData['frequencias'],
+    ocupacao: (ocupacao.data ?? []) as IntegratedPanelData['ocupacao'],
+    projetosStatus: (projetosStatus.data ?? []) as IntegratedPanelData['projetosStatus'],
   };
 }
 
