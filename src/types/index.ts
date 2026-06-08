@@ -3,6 +3,7 @@ export type StatusValidacao = 'Válido' | 'Alerta' | 'Incompleto' | 'Duplicado';
 export type StatusProjeto = 'Ativo' | 'Encerrado' | 'Pausado';
 export type GrauDeficiencia = 'Leve' | 'Moderado' | 'Grave/Severo' | 'Não informado';
 export type Sexo = 'Feminino' | 'Masculino' | 'Não informado';
+export type StatusAtendido = 'Ativo' | 'Inativo' | 'Acompanhamento' | 'Inconsistente' | 'Aguardando revisão' | 'Excluído';
 
 export type FontePlanilha = {
   id: string;
@@ -65,6 +66,16 @@ export type Atendido = {
   unidade: string;
   projeto: string;
   servico: string;
+  responsavel: string;
+  telefone: string;
+  email: string;
+  escola: string;
+  observacoes: string;
+  status: StatusAtendido;
+  origemFonte?: string;
+  deletedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
   status: 'Ativo' | 'Inativo' | 'Acompanhamento';
 };
 
@@ -94,6 +105,9 @@ export type LogProcessamento = {
   mensagem: string;
   linhasProcessadas: number;
   quantidadeErros: number;
+  usuario?: string;
+  acao?: string;
+  quantidadeRegistrosAfetados?: number;
 };
 
 export type MapeamentoColuna = {

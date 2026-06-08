@@ -73,6 +73,15 @@ export const atendidos: Atendido[] = Array.from(new Map(registrosAtendimento.map
   unidade: registro.unidade,
   projeto: registro.projeto,
   servico: registro.servico,
+  responsavel: `Responsável ${index + 1}`,
+  telefone: `(31) 9${String(80000000 + index * 137).slice(0, 8)}`,
+  email: index % 4 === 0 ? '' : `responsavel${index + 1}@exemplo.org`,
+  escola: index % 3 === 0 ? 'Escola Municipal Inclusiva' : '',
+  observacoes: 'Registro simulado para demonstração gerencial.',
+  status: index % 13 === 0 ? 'Aguardando revisão' : index % 9 === 0 ? 'Acompanhamento' : 'Ativo',
+  origemFonte: registro.origemFonte,
+  createdAt: '2026-05-28T10:30:00',
+  updatedAt: '2026-05-28T10:30:00',
   status: index % 9 === 0 ? 'Acompanhamento' : 'Ativo',
 }));
 
